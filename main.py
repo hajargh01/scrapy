@@ -1,5 +1,4 @@
-import re
-
+from parser import Parser
 import requests
 from payload import data
 from bs4 import BeautifulSoup
@@ -16,63 +15,15 @@ response = requests.post(
     },
     data=data,
 )
-text = response.text
-with open("index.html", "w", encoding="utf-8") as f:
-    f.write(text)
-# with open("index.html", encoding="utf-8") as f:
-#     text = f.read()
 
-soup = BeautifulSoup(text, "html.parser")
+soup = BeautifulSoup(response.text, "html.parser")
+parser = Parser(soup)
 
-selectors = {
-    "dates_de_publication": "[headers=cons_ref] div:nth-child(4)",
-    "references": "[headers=cons_intitule] .ref",
-    "objets": "[headers=cons_intitule] .info-bulle",
-    "acheteurs_publics": "[headers=cons_intitule] .objet-line:nth-child(3)",
-    "lieux": "[headers=cons_lieuExe] > div > div:nth-of-type(1)",
-    "dates_limites_de_remise_des_plis": "[headers=cons_dateEnd] > div:nth-of-type(1)",
-}
+dates_de_publication = parser.dates_de_publication()
+references = parser.references()
+objets = parser.objets()
+acheteurs_publics = parser.acheteurs_publics()
+lieux = parser.lieux()
+dates_limites_de_remise_des_plis = parser.dates_limites_de_remise_des_plis()
 
-
-def dates_de_publication():
-    ls = []
-    for _date in soup.select(selectors["dates_de_publication"]):
-        ls.append(_date.text.strip())
-    return ls
-
-
-def references():
-    ls = []
-    for reference in soup.select(selectors["references"]):
-        ls.append(reference.text)
-    return ls
-
-
-def objets():
-    ls = []
-    for _object in soup.select(selectors["objets"]):
-        ls.append(_object.text.strip())
-    return ls
-
-
-def acheteurs_publics():
-    ls = []
-    for acheteur in soup.select(selectors["acheteurs_publics"]):
-        ls.append(acheteur.contents[-1].text.strip())
-    return ls
-
-
-def lieux():
-    ls = []
-    for lieu in soup.select(selectors["lieux"]):
-        ls.append(lieu.contents[0].text.strip())
-    return ls
-
-
-def dates_limites_de_remise_des_plis():
-    ls = []
-    for i in soup.select(selectors["dates_limites_de_remise_des_plis"]):
-        s = i.contents[1].text.strip()
-        date, time = re.match(r"(.*?)(\d{1,2}:\d{2})$", s).groups()
-        ls.append({"date": date, "time": time})
-    return ls
+print()
