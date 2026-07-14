@@ -23,36 +23,56 @@ with open("index.html", "w", encoding="utf-8") as f:
 #     text = f.read()
 
 soup = BeautifulSoup(text, "html.parser")
-dates = soup.select("[headers=cons_ref] div:nth-child(4)")
-l = []
-for date in dates:
-    l.append(date.text.strip())
-references = soup.select("[headers=cons_intitule] .ref")
-R = []
-for reference in references:
-    R.append(reference.text)
-objects = soup.select("[headers=cons_intitule] .info-bulle")
-O = []
-for _object in objects:
-    O.append(_object.text.strip())
-achteursPubliques = soup.select("[headers=cons_intitule] .objet-line:nth-child(3)")
 
-A = []
-for _achteur in achteursPubliques:
-    A.append(_achteur.contents[-1].text.strip())
+selectors = {
+    "publie_le": "[headers=cons_ref] div:nth-child(4)",
+    "references": "[headers=cons_intitule] .ref",
+    "objets": "[headers=cons_intitule] .info-bulle",
+    "achteurs_publiques": "[headers=cons_intitule] .objet-line:nth-child(3)",
+    "lieux": "[headers=cons_lieuExe] > div > div:nth-of-type(1)",
+    "date_limite_de_remise_des_plis": "[headers=cons_dateEnd] > div:nth-of-type(1)",
+}
 
-lieux = soup.select("[headers=cons_lieuExe] > div > div:nth-of-type(1)")
 
-L = []
+def publie_le():
+    ls = []
+    for _date in soup.select(selectors["publie_le"]):
+        ls.append(_date.text.strip())
+    return ls
 
-for lieu in lieux:
-    L.append(lieu.contents[0].text.strip())
 
-datesr = soup.select("[headers=cons_dateEnd] > div:nth-of-type(1)")
+def references():
+    ls = []
+    for reference in soup.select(selectors["references"]):
+        ls.append(reference.text)
+    return ls
 
-DR = []
 
-for i in datesr:
-    s = i.contents[1].text.strip()
-    date, time = re.match(r"(.*?)(\d{1,2}:\d{2})$", s).groups()
-    DR.append({"date": date, "time": time})
+def objets():
+    ls = []
+    for _object in soup.select(selectors["objets"]):
+        ls.append(_object.text.strip())
+    return ls
+
+
+def achteurs_publiques():
+    ls = []
+    for _achteur in soup.select(selectors["achteurs_publiques"]):
+        ls.append(_achteur.contents[-1].text.strip())
+    return ls
+
+
+def lieux():
+    ls = []
+    for lieu in soup.select(selectors["lieux"]):
+        ls.append(lieu.contents[0].text.strip())
+    return ls
+
+
+def date_limite_de_remise_des_plis():
+    ls = []
+    for i in soup.select(selectors["date_limite_de_remise_des_plis"]):
+        s = i.contents[1].text.strip()
+        date, time = re.match(r"(.*?)(\d{1,2}:\d{2})$", s).groups()
+        ls.append({"date": date, "time": time})
+    return ls
