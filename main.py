@@ -25,5 +25,5 @@ objets = parser.objets()
 acheteurs_publics = parser.acheteurs_publics()
 lieux = parser.lieux()
 dates_limites_de_remise_des_plis = parser.dates_limites_de_remise_des_plis()
-
+consultations = parser.consultations()
 print()
