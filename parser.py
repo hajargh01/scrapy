@@ -1,9 +1,9 @@
 import re
 
-from selectors import selectors
+from _selectors import selectors
 
 
-class Parser:
+class ConsultationListParser:
     def __init__(self, soup):
         self.soup = soup
 
@@ -44,3 +44,31 @@ class Parser:
             date, time = re.match(r"(.*?)(\d{1,2}:\d{2})$", s).groups()
             ls.append({"date": date, "time": time})
         return ls
+
+    def consultations(self):
+        ls = []
+        base_url = "https://www.marchespublics.gov.ma/index.php"
+        for consultation in self.soup.select(selectors["consultations"]):
+            ls.append(base_url + consultation["href"])
+        return ls
+
+
+class DetailsConsultationParser:
+    def __init__(self, soup):
+        self.soup = soup
+
+    def estimation(self):
+        estimation = self.soup.select_one(selectors["estimation"])
+
+        if estimation:
+            return estimation.text.strip()
+
+        return None
+
+    def caution(self):
+        caution = self.soup.select_one(selectors["caution"])
+
+        if caution.text.strip() == "":
+            return None
+
+        return caution.text.split()[0]

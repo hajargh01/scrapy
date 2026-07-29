@@ -1,4 +1,4 @@
-from parser import Parser
+from parser import ConsultationListParser, DetailsConsultationParser
 import requests
 from payload import data
 from bs4 import BeautifulSoup
@@ -35,12 +35,21 @@ def fetch_details_consultation(url):
 
 
 soup = BeautifulSoup(fetch_consultations().text, "html.parser")
-parser = Parser(soup)
+consultation_list_parser = ConsultationListParser(soup)
 
-dates_de_publication = parser.dates_de_publication()
-references = parser.references()
-objets = parser.objets()
-acheteurs_publics = parser.acheteurs_publics()
-lieux = parser.lieux()
-dates_limites_de_remise_des_plis = parser.dates_limites_de_remise_des_plis()
-consultations = parser.consultations()
+dates_de_publication = consultation_list_parser.dates_de_publication()
+references = consultation_list_parser.references()
+objets = consultation_list_parser.objets()
+acheteurs_publics = consultation_list_parser.acheteurs_publics()
+lieux = consultation_list_parser.lieux()
+dates_limites_de_remise_des_plis = (
+    consultation_list_parser.dates_limites_de_remise_des_plis()
+)
+consultations = consultation_list_parser.consultations()
+
+test = BeautifulSoup(fetch_details_consultation(consultations[1]).text, "html.parser")
+details_consultation_parser = DetailsConsultationParser(test)
+
+estimation = details_consultation_parser.estimation()
+caution = details_consultation_parser.caution()
+print()
