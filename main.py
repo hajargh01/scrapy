@@ -47,9 +47,58 @@ dates_limites_de_remise_des_plis = (
 )
 consultations = consultation_list_parser.consultations()
 
-test = BeautifulSoup(fetch_details_consultation(consultations[1]).text, "html.parser")
-details_consultation_parser = DetailsConsultationParser(test)
+# estimations = []
+# cautions = []
+# for url in consultations:
+#     test = BeautifulSoup(fetch_details_consultation(url).text, "html.parser")
+#     details_consultation_parser = DetailsConsultationParser(test)
+#
+#     estimation = details_consultation_parser.estimation()
+#     caution = details_consultation_parser.caution()
+#     estimations.append(estimation)
+#     cautions.append(caution)
 
-estimation = details_consultation_parser.estimation()
-caution = details_consultation_parser.caution()
-print()
+
+class Consultation:
+    def __init__(
+        self,
+        date_publication,
+        reference,
+        objet,
+        acheteurs_public,
+        lieux,
+        date_limite,
+        # estimation,
+        # caution,
+    ):
+        self.date_publication = date_publication
+        self.reference = reference
+        self.objet = objet
+        self.acheteurs_public = acheteurs_public
+        self.lieux = lieux
+        self.date_limite = date_limite
+        # self.estimation = estimation
+        # self.caution = caution
+
+
+data_consultation: list[Consultation] = []
+for i in range(len(references)):
+    consultation = Consultation(
+        dates_de_publication[i],
+        references[i],
+        objets[i],
+        acheteurs_publics[i],
+        lieux[i],
+        dates_limites_de_remise_des_plis[i],
+        # estimations[i],
+        # cautions[i],
+    )
+    data_consultation.append(consultation)
+
+for cons in data_consultation:
+    print(cons.date_publication)
+    print(cons.reference)
+    print(cons.date_limite)
+    print(cons.acheteurs_public)
+    print(cons.objet)
+    print(cons.lieux)
