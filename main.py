@@ -1,10 +1,13 @@
 from parser import ConsultationListParser, DetailsConsultationParser
+from consultation import Consultation
+from time import perf_counter
 import requests
 from payload import data
 from bs4 import BeautifulSoup
 
 
 def fetch_consultations():
+    start = perf_counter()
     response = requests.post(
         "https://www.marchespublics.gov.ma/index.php?page=entreprise.EntrepriseAdvancedSearch&searchAnnCons",
         headers={
@@ -17,10 +20,13 @@ def fetch_consultations():
         },
         data=data,
     )
+    end = perf_counter()
+    print("Sent consultations POST request: ", end - start)
     return response
 
 
 def fetch_details_consultation(url):
+    start = perf_counter()
     response = requests.get(
         url,
         headers={
@@ -31,8 +37,12 @@ def fetch_details_consultation(url):
             ),
         },
     )
+    end = perf_counter()
+    print("Sent details consultation GET request: ", end - start)
     return response
 
+
+start = perf_counter()
 
 soup = BeautifulSoup(fetch_consultations().text, "html.parser")
 consultation_list_parser = ConsultationListParser(soup)
@@ -47,38 +57,40 @@ dates_limites_de_remise_des_plis = (
 )
 consultations = consultation_list_parser.consultations()
 
-# estimations = []
-# cautions = []
-# for url in consultations:
-#     test = BeautifulSoup(fetch_details_consultation(url).text, "html.parser")
-#     details_consultation_parser = DetailsConsultationParser(test)
-#
-#     estimation = details_consultation_parser.estimation()
-#     caution = details_consultation_parser.caution()
-#     estimations.append(estimation)
-#     cautions.append(caution)
+end = perf_counter()
+print("Parsed consultations page: ", end - start)
 
 
-class Consultation:
-    def __init__(
-        self,
-        date_publication,
-        reference,
-        objet,
-        acheteurs_public,
-        lieux,
-        date_limite,
-        # estimation,
-        # caution,
-    ):
-        self.date_publication = date_publication
-        self.reference = reference
-        self.objet = objet
-        self.acheteurs_public = acheteurs_public
-        self.lieux = lieux
-        self.date_limite = date_limite
-        # self.estimation = estimation
-        # self.caution = caution
+estimations = []
+cautions = []
+page = 1
+sum_request = 0
+sum_parsing = 0
+for url in consultations:
+    start = perf_counter()
+    response = fetch_details_consultation(url)
+    end = perf_counter()
+    sum_request += end - start
+
+    start = perf_counter()
+    test = BeautifulSoup(response.text, "html.parser")
+    details_consultation_parser = DetailsConsultationParser(test)
+
+    estimation = details_consultation_parser.estimation()
+    caution = details_consultation_parser.caution()
+
+    end = perf_counter()
+    sum_parsing += end - start
+
+    print(f"Parsed details consultation [page: {page}]: {end - start}")
+
+    estimations.append(estimation)
+    cautions.append(caution)
+
+    page += 1
+
+print(f"Sent details consultation GET requests: {sum_request}")
+print(f"Parsed details consultation pages: {sum_parsing}")
 
 
 data_consultation: list[Consultation] = []
@@ -90,8 +102,8 @@ for i in range(len(references)):
         acheteurs_publics[i],
         lieux[i],
         dates_limites_de_remise_des_plis[i],
-        # estimations[i],
-        # cautions[i],
+        estimations[i],
+        cautions[i],
     )
     data_consultation.append(consultation)
 
