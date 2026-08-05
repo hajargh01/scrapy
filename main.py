@@ -1,6 +1,7 @@
 from parser import ConsultationListParser, DetailsConsultationParser
-from consultation import Consultation
+import threading
 from time import perf_counter
+from consultation import Consultation
 import requests
 from payload import data
 from bs4 import BeautifulSoup
@@ -66,7 +67,11 @@ cautions = []
 page = 1
 sum_request = 0
 sum_parsing = 0
-for url in consultations:
+
+
+def process_consultation(url):
+    global page, sum_request, sum_parsing
+
     start = perf_counter()
     response = fetch_details_consultation(url)
     end = perf_counter()
@@ -88,6 +93,19 @@ for url in consultations:
     cautions.append(caution)
 
     page += 1
+
+
+threads = []
+
+for url in consultations:
+    thread = threading.Thread(
+        target=process_consultation,
+        args=(url,),
+    )
+    threads.append(thread)
+
+for thread in threads:
+    thread.start()
 
 print(f"Sent details consultation GET requests: {sum_request}")
 print(f"Parsed details consultation pages: {sum_parsing}")
