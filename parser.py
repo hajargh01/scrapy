@@ -71,4 +71,4 @@ class DetailsConsultationParser:
         if caution.text.strip() == "":
             return None
 
-        return caution.text.split()[0]
+        return caution.text

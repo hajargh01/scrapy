@@ -72,14 +72,14 @@ end = perf_counter()
 print("Parsed consultations page: ", end - start)
 
 
-estimations = []
-cautions = []
+estimations = [None] * len(references)
+cautions = [None] * len(references)
 page = 1
 sum_request = 0
 sum_parsing = 0
 
 
-def process_consultation(url):
+def process_consultation(url, index):
     global page, sum_request, sum_parsing
 
     start = perf_counter()
@@ -99,18 +99,18 @@ def process_consultation(url):
 
     print(f"Parsed details consultation [page: {page}]: {end - start}")
 
-    estimations.append(estimation)
-    cautions.append(caution)
+    estimations[index] = estimation
+    cautions[index] = caution
 
     page += 1
 
 
 threads = []
 
-for url in consultations:
+for i in range(len(consultations)):
     thread = threading.Thread(
         target=process_consultation,
-        args=(url,),
+        args=(consultations[i], i),
     )
     threads.append(thread)
 
