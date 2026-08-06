@@ -5,6 +5,16 @@ from consultation import Consultation
 import requests
 from payload import data
 from bs4 import BeautifulSoup
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+session = requests.Session()
+retries = Retry(
+    total=5,
+    backoff_factor=1,
+    status_forcelist=[429, 500, 502, 503, 504],
+)
+session.mount("https://", HTTPAdapter(max_retries=retries, pool_maxsize=10))
 
 
 def fetch_consultations():
@@ -28,7 +38,7 @@ def fetch_consultations():
 
 def fetch_details_consultation(url):
     start = perf_counter()
-    response = requests.get(
+    response = session.get(
         url,
         headers={
             "User-Agent": (
@@ -39,7 +49,7 @@ def fetch_details_consultation(url):
         },
     )
     end = perf_counter()
-    print("Sent details consultation GET request: ", end - start)
+    print(f"Sent details consultation GET request: {end - start}")
     return response
 
 
@@ -107,6 +117,9 @@ for url in consultations:
 for thread in threads:
     thread.start()
 
+for thread in threads:
+    thread.join()
+
 print(f"Sent details consultation GET requests: {sum_request}")
 print(f"Parsed details consultation pages: {sum_parsing}")
 
@@ -124,11 +137,11 @@ for i in range(len(references)):
         cautions[i],
     )
     data_consultation.append(consultation)
-
-for cons in data_consultation:
-    print(cons.date_publication)
-    print(cons.reference)
-    print(cons.date_limite)
-    print(cons.acheteurs_public)
-    print(cons.objet)
-    print(cons.lieux)
+#
+# for cons in data_consultation:
+#     print(cons.date_publication)
+#     print(cons.reference)
+#     print(cons.date_limite)
+#     print(cons.acheteurs_public)
+#     print(cons.objet)
+#     print(cons.lieux)
