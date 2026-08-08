@@ -52,6 +52,9 @@ class ConsultationListParser:
             ls.append(base_url + consultation["href"])
         return ls
 
+    def pages(self):
+        return int(self.soup.select_one(selectors["pages"]).text)
+
 
 class DetailsConsultationParser:
     def __init__(self, soup):

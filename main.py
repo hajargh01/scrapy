@@ -3,7 +3,7 @@ import threading
 from time import perf_counter
 from consultation import Consultation
 import requests
-from payload import data
+from payload import p_data
 from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -17,7 +17,7 @@ retries = Retry(
 session.mount("https://", HTTPAdapter(max_retries=retries, pool_maxsize=10))
 
 
-def fetch_consultations():
+def fetch_consultations(page):
     start = perf_counter()
     response = requests.post(
         "https://www.marchespublics.gov.ma/index.php?page=entreprise.EntrepriseAdvancedSearch&searchAnnCons",
@@ -29,10 +29,10 @@ def fetch_consultations():
                 "Chrome/125.0.0.0 Safari/537.36"
             ),
         },
-        data=data,
+        data=p_data(page),
     )
     end = perf_counter()
-    print("Sent consultations POST request: ", end - start)
+    print(f"Sent consultations POST request page {page}: {end - start}")
     return response
 
 
@@ -55,18 +55,44 @@ def fetch_details_consultation(url):
 
 start = perf_counter()
 
-soup = BeautifulSoup(fetch_consultations().text, "html.parser")
+soup = BeautifulSoup(fetch_consultations(1).text, "html.parser")
 consultation_list_parser = ConsultationListParser(soup)
 
-dates_de_publication = consultation_list_parser.dates_de_publication()
-references = consultation_list_parser.references()
-objets = consultation_list_parser.objets()
-acheteurs_publics = consultation_list_parser.acheteurs_publics()
-lieux = consultation_list_parser.lieux()
-dates_limites_de_remise_des_plis = (
+pages = consultation_list_parser.pages()
+
+dates_de_publication = []
+references = []
+objets = []
+acheteurs_publics = []
+lieux = []
+dates_limites_de_remise_des_plis = []
+consultations = []
+
+dates_de_publication += consultation_list_parser.dates_de_publication()
+references += consultation_list_parser.references()
+objets += consultation_list_parser.objets()
+acheteurs_publics += consultation_list_parser.acheteurs_publics()
+lieux += consultation_list_parser.lieux()
+dates_limites_de_remise_des_plis += (
     consultation_list_parser.dates_limites_de_remise_des_plis()
 )
-consultations = consultation_list_parser.consultations()
+consultations += consultation_list_parser.consultations()
+
+for page in range(2, pages + 1):
+    response = fetch_consultations(page)
+
+    soup = BeautifulSoup(response.text, "html.parser")
+    consultation_list_parser = ConsultationListParser(soup)
+
+    dates_de_publication += consultation_list_parser.dates_de_publication()
+    references += consultation_list_parser.references()
+    objets += consultation_list_parser.objets()
+    acheteurs_publics += consultation_list_parser.acheteurs_publics()
+    lieux += consultation_list_parser.lieux()
+    dates_limites_de_remise_des_plis += (
+        consultation_list_parser.dates_limites_de_remise_des_plis()
+    )
+    consultations += consultation_list_parser.consultations()
 
 end = perf_counter()
 print("Parsed consultations page: ", end - start)

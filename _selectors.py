@@ -8,4 +8,5 @@ selectors = {
     "dates_limites_de_remise_des_plis": "[headers=cons_dateEnd] > div:nth-of-type(1)",
     "estimation": "#ctl0_CONTENU_PAGE_idEntrepriseConsultationSummary_idReferentielZoneText_RepeaterReferentielZoneText_ctl0_labelReferentielZoneText",
     "caution": "#ctl0_CONTENU_PAGE_idEntrepriseConsultationSummary_cautionProvisoire",
+    "pages": "#ctl0_CONTENU_PAGE_resultSearch_nombrePageTop",
 }
