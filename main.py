@@ -78,21 +78,21 @@ dates_limites_de_remise_des_plis += (
 )
 consultations += consultation_list_parser.consultations()
 
-for page in range(2, pages + 1):
-    response = fetch_consultations(page)
-
-    soup = BeautifulSoup(response.text, "html.parser")
-    consultation_list_parser = ConsultationListParser(soup)
-
-    dates_de_publication += consultation_list_parser.dates_de_publication()
-    references += consultation_list_parser.references()
-    objets += consultation_list_parser.objets()
-    acheteurs_publics += consultation_list_parser.acheteurs_publics()
-    lieux += consultation_list_parser.lieux()
-    dates_limites_de_remise_des_plis += (
-        consultation_list_parser.dates_limites_de_remise_des_plis()
-    )
-    consultations += consultation_list_parser.consultations()
+# for page in range(2, pages + 1):
+#     response = fetch_consultations(page)
+#
+#     soup = BeautifulSoup(response.text, "html.parser")
+#     consultation_list_parser = ConsultationListParser(soup)
+#
+#     dates_de_publication += consultation_list_parser.dates_de_publication()
+#     references += consultation_list_parser.references()
+#     objets += consultation_list_parser.objets()
+#     acheteurs_publics += consultation_list_parser.acheteurs_publics()
+#     lieux += consultation_list_parser.lieux()
+#     dates_limites_de_remise_des_plis += (
+#         consultation_list_parser.dates_limites_de_remise_des_plis()
+#     )
+#     consultations += consultation_list_parser.consultations()
 
 end = perf_counter()
 print("Parsed consultations page: ", end - start)
@@ -110,10 +110,7 @@ def process_consultation(url, index):
 
     start = perf_counter()
     response = fetch_details_consultation(url)
-    end = perf_counter()
-    sum_request += end - start
 
-    start = perf_counter()
     test = BeautifulSoup(response.text, "html.parser")
     details_consultation_parser = DetailsConsultationParser(test)
 
@@ -121,9 +118,8 @@ def process_consultation(url, index):
     caution = details_consultation_parser.caution()
 
     end = perf_counter()
-    sum_parsing += end - start
 
-    print(f"Parsed details consultation [page: {page}]: {end - start}")
+    print(f"Request and parse details consultation [page: {page}]: {end - start}")
 
     estimations[index] = estimation
     cautions[index] = caution
@@ -139,15 +135,14 @@ for i in range(len(consultations)):
         args=(consultations[i], i),
     )
     threads.append(thread)
-
+start = perf_counter()
 for thread in threads:
     thread.start()
 
 for thread in threads:
     thread.join()
-
-print(f"Sent details consultation GET requests: {sum_request}")
-print(f"Parsed details consultation pages: {sum_parsing}")
+end = perf_counter()
+print(f"Request and parse details consultation pages: {end - start}")
 
 
 data_consultation: list[Consultation] = []
@@ -163,7 +158,7 @@ for i in range(len(references)):
         cautions[i],
     )
     data_consultation.append(consultation)
-#
+
 # for cons in data_consultation:
 #     print(cons.date_publication)
 #     print(cons.reference)
