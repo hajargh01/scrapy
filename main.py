@@ -53,13 +53,6 @@ def fetch_details_consultation(url):
     return response
 
 
-start = perf_counter()
-
-soup = BeautifulSoup(fetch_consultations(1).text, "html.parser")
-consultation_list_parser = ConsultationListParser(soup)
-
-pages = consultation_list_parser.pages()
-
 dates_de_publication = []
 references = []
 objets = []
@@ -67,22 +60,6 @@ acheteurs_publics = []
 lieux = []
 dates_limites_de_remise_des_plis = []
 consultations = []
-
-dates_de_publication += consultation_list_parser.dates_de_publication()
-references += consultation_list_parser.references()
-objets += consultation_list_parser.objets()
-acheteurs_publics += consultation_list_parser.acheteurs_publics()
-lieux += consultation_list_parser.lieux()
-dates_limites_de_remise_des_plis += (
-    consultation_list_parser.dates_limites_de_remise_des_plis()
-)
-consultations += consultation_list_parser.consultations()
-
-end = perf_counter()
-print("Parsed consultations page: ", end - start)
-
-
-results = [None] * (pages - 1)
 
 
 def consultation_page(page):
@@ -102,6 +79,7 @@ def consultation_page(page):
     lieux_page = consultation_list_parser.lieux()
     dates_limites = consultation_list_parser.dates_limites_de_remise_des_plis()
     consultations_page = consultation_list_parser.consultations()
+    pages = consultation_list_parser.pages()
 
     end = perf_counter()
 
@@ -117,6 +95,10 @@ def consultation_page(page):
     dates_limites_de_remise_des_plis[start:end] = dates_limites
     consultations[start:end] = consultations_page
 
+    return pages
+
+
+pages = consultation_page(1)
 
 threads = []
 
