@@ -78,25 +78,64 @@ dates_limites_de_remise_des_plis += (
 )
 consultations += consultation_list_parser.consultations()
 
-# for page in range(2, pages + 1):
-#     response = fetch_consultations(page)
-#
-#     soup = BeautifulSoup(response.text, "html.parser")
-#     consultation_list_parser = ConsultationListParser(soup)
-#
-#     dates_de_publication += consultation_list_parser.dates_de_publication()
-#     references += consultation_list_parser.references()
-#     objets += consultation_list_parser.objets()
-#     acheteurs_publics += consultation_list_parser.acheteurs_publics()
-#     lieux += consultation_list_parser.lieux()
-#     dates_limites_de_remise_des_plis += (
-#         consultation_list_parser.dates_limites_de_remise_des_plis()
-#     )
-#     consultations += consultation_list_parser.consultations()
-
 end = perf_counter()
 print("Parsed consultations page: ", end - start)
 
+
+results = [None] * (pages - 1)
+
+
+def consultation_page(page):
+    global dates_de_publication, references, objets, acheteurs_publics, lieux, dates_limites_de_remise_des_plis, consultations
+
+    start = perf_counter()
+
+    response = fetch_consultations(page)
+
+    test = BeautifulSoup(response.text, "html.parser")
+    consultation_list_parser = ConsultationListParser(test)
+
+    dates = consultation_list_parser.dates_de_publication()
+    refs = consultation_list_parser.references()
+    objs = consultation_list_parser.objets()
+    acheteurs = consultation_list_parser.acheteurs_publics()
+    lieux_page = consultation_list_parser.lieux()
+    dates_limites = consultation_list_parser.dates_limites_de_remise_des_plis()
+    consultations_page = consultation_list_parser.consultations()
+
+    end = perf_counter()
+
+    print(f"Request and parse consultations [page: {page}]: " f"{end - start}")
+    start = (page - 1) * 100
+    end = start + 100
+
+    dates_de_publication[start:end] = dates
+    references[start:end] = refs
+    objets[start:end] = objs
+    acheteurs_publics[start:end] = acheteurs
+    lieux[start:end] = lieux_page
+    dates_limites_de_remise_des_plis[start:end] = dates_limites
+    consultations[start:end] = consultations_page
+
+
+threads = []
+
+start = perf_counter()
+
+for page in range(2, pages + 1):
+    thread = threading.Thread(
+        target=consultation_page,
+        args=(page,),
+    )
+
+    threads.append(thread)
+    thread.start()
+
+for thread in threads:
+    thread.join()
+
+end = perf_counter()
+print(f"Request and parse consultations pages " f"{end - start}")
 
 estimations = [None] * len(references)
 cautions = [None] * len(references)
@@ -106,7 +145,7 @@ sum_parsing = 0
 
 
 def process_consultation(url, index):
-    global page, sum_request, sum_parsing
+    global sum_request, sum_parsing
 
     start = perf_counter()
     response = fetch_details_consultation(url)
@@ -119,12 +158,10 @@ def process_consultation(url, index):
 
     end = perf_counter()
 
-    print(f"Request and parse details consultation [page: {page}]: {end - start}")
+    print(f"Request and parse details consultation [#: {index+1}]: {end - start}")
 
     estimations[index] = estimation
     cautions[index] = caution
-
-    page += 1
 
 
 threads = []
@@ -144,7 +181,7 @@ for thread in threads:
 end = perf_counter()
 print(f"Request and parse details consultation pages: {end - start}")
 
-
+# i*page -> page[1];
 data_consultation: list[Consultation] = []
 for i in range(len(references)):
     consultation = Consultation(
