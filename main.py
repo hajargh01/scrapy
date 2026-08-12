@@ -1,65 +1,14 @@
+from _request import fetch_details_consultation, open_search_form, post_search
 from parser import ConsultationListParser, DetailsConsultationParser, page_state
 import threading
 from time import perf_counter
 from consultation import Consultation
-import requests
 from payload import (
-    FORM_URL,
-    SEARCH_URL,
     next_page_data,
     page_size_data,
     search_data,
 )
 from bs4 import BeautifulSoup
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
-
-session = requests.Session()
-retries = Retry(
-    total=5,
-    backoff_factor=1,
-    status_forcelist=[429, 500, 502, 503, 504],
-)
-session.mount("https://", HTTPAdapter(max_retries=retries, pool_maxsize=10))
-
-
-USER_AGENT = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-    "AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/125.0.0.0 Safari/537.36"
-)
-
-
-def post_search(data, label):
-    start = perf_counter()
-    response = session.post(
-        SEARCH_URL,
-        headers={
-            "Content-Type": "application/x-www-form-urlencoded",
-            "User-Agent": USER_AGENT,
-        },
-        data=data,
-    )
-    end = perf_counter()
-    print(f"Sent consultations POST request [{label}]: {end - start}")
-    return BeautifulSoup(response.text, "html.parser")
-
-
-def open_search_form():
-    start = perf_counter()
-    response = session.get(FORM_URL, headers={"User-Agent": USER_AGENT})
-    end = perf_counter()
-    print(f"Sent search form GET request: {end - start}")
-    return BeautifulSoup(response.text, "html.parser")
-
-
-def fetch_details_consultation(url):
-    start = perf_counter()
-    response = session.get(url, headers={"User-Agent": USER_AGENT})
-    end = perf_counter()
-    print(f"Sent details consultation GET request: {end - start}")
-    return response
-
 
 dates_de_publication = []
 references = []
@@ -75,18 +24,16 @@ def collect_consultation_page(soup, page):
 
     start = perf_counter()
 
-    consultation_list_parser = ConsultationListParser(soup)
+    parser = ConsultationListParser(soup)
 
-    dates_de_publication += consultation_list_parser.dates_de_publication()
-    references += consultation_list_parser.references()
-    objets += consultation_list_parser.objets()
-    acheteurs_publics += consultation_list_parser.acheteurs_publics()
-    lieux += consultation_list_parser.lieux()
-    dates_limites_de_remise_des_plis += (
-        consultation_list_parser.dates_limites_de_remise_des_plis()
-    )
-    consultations += consultation_list_parser.consultations()
-    pages = consultation_list_parser.pages()
+    dates_de_publication += parser.dates_de_publication()
+    references += parser.references()
+    objets += parser.objets()
+    acheteurs_publics += parser.acheteurs_publics()
+    lieux += parser.lieux()
+    dates_limites_de_remise_des_plis += parser.dates_limites_de_remise_des_plis()
+    consultations += parser.consultations()
+    pages = parser.pages()
 
     end = perf_counter()
 
@@ -97,9 +44,12 @@ def collect_consultation_page(soup, page):
 
 start = perf_counter()
 
-soup = open_search_form()
-soup = post_search(search_data(page_state(soup)), "search")
-soup = post_search(page_size_data(page_state(soup)), "page size")
+response = open_search_form()
+soup = BeautifulSoup(response.text, "html.parser")
+response = post_search(search_data(page_state(soup)), "search")
+soup = BeautifulSoup(response.text, "html.parser")
+response = post_search(page_size_data(page_state(soup)), "page size")
+soup = BeautifulSoup(response.text, "html.parser")
 
 pages = collect_consultation_page(soup, 1)
 
