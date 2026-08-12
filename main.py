@@ -72,52 +72,34 @@ def consultation_page(page):
     test = BeautifulSoup(response.text, "html.parser")
     consultation_list_parser = ConsultationListParser(test)
 
-    dates = consultation_list_parser.dates_de_publication()
-    refs = consultation_list_parser.references()
-    objs = consultation_list_parser.objets()
-    acheteurs = consultation_list_parser.acheteurs_publics()
-    lieux_page = consultation_list_parser.lieux()
-    dates_limites = consultation_list_parser.dates_limites_de_remise_des_plis()
-    consultations_page = consultation_list_parser.consultations()
+    dates_de_publication += consultation_list_parser.dates_de_publication()
+    references += consultation_list_parser.references()
+    objets += consultation_list_parser.objets()
+    acheteurs_publics += consultation_list_parser.acheteurs_publics()
+    lieux += consultation_list_parser.lieux()
+    dates_limites_de_remise_des_plis += (
+        consultation_list_parser.dates_limites_de_remise_des_plis()
+    )
+    consultations += consultation_list_parser.consultations()
     pages = consultation_list_parser.pages()
 
     end = perf_counter()
 
     print(f"Request and parse consultations [page: {page}]: " f"{end - start}")
-    start = (page - 1) * 100
-    end = start + 100
-
-    dates_de_publication[start:end] = dates
-    references[start:end] = refs
-    objets[start:end] = objs
-    acheteurs_publics[start:end] = acheteurs
-    lieux[start:end] = lieux_page
-    dates_limites_de_remise_des_plis[start:end] = dates_limites
-    consultations[start:end] = consultations_page
 
     return pages
 
 
 pages = consultation_page(1)
 
-threads = []
-
 start = perf_counter()
 
 for page in range(2, pages + 1):
-    thread = threading.Thread(
-        target=consultation_page,
-        args=(page,),
-    )
-
-    threads.append(thread)
-    thread.start()
-
-for thread in threads:
-    thread.join()
+    consultation_page(page)
 
 end = perf_counter()
-print(f"Request and parse consultations pages " f"{end - start}")
+
+print(f"Request and parse consultations pages: {end - start}")
 
 estimations = [None] * len(references)
 cautions = [None] * len(references)
@@ -163,7 +145,6 @@ for thread in threads:
 end = perf_counter()
 print(f"Request and parse details consultation pages: {end - start}")
 
-# i*page -> page[1];
 data_consultation: list[Consultation] = []
 for i in range(len(references)):
     consultation = Consultation(
