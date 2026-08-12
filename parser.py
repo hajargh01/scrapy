@@ -3,6 +3,10 @@ import re
 from _selectors import selectors
 
 
+def page_state(soup):
+    return soup.select_one(selectors["pagestate"])["value"]
+
+
 class ConsultationListParser:
     def __init__(self, soup):
         self.soup = soup

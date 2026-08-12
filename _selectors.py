@@ -9,4 +9,5 @@ selectors = {
     "estimation": "#ctl0_CONTENU_PAGE_idEntrepriseConsultationSummary_idReferentielZoneText_RepeaterReferentielZoneText_ctl0_labelReferentielZoneText",
     "caution": "#ctl0_CONTENU_PAGE_idEntrepriseConsultationSummary_cautionProvisoire",
     "pages": "#ctl0_CONTENU_PAGE_resultSearch_nombrePageTop",
+    "pagestate": "#PRADO_PAGESTATE",
 }
