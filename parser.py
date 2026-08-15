@@ -1,4 +1,5 @@
 import re
+from time import perf_counter
 
 from _selectors import selectors
 
@@ -58,6 +59,35 @@ class ConsultationListParser:
 
     def pages(self):
         return int(self.soup.select_one(selectors["pages"]).text)
+
+    def collect_consultation_page(
+        self,
+        page,
+        dates_de_publication,
+        references,
+        objets,
+        acheteurs_publics,
+        lieux,
+        dates_limites_de_remise_des_plis,
+        consultations,
+    ):
+
+        start = perf_counter()
+
+        dates_de_publication += self.dates_de_publication()
+        references += self.references()
+        objets += self.objets()
+        acheteurs_publics += self.acheteurs_publics()
+        lieux += self.lieux()
+        dates_limites_de_remise_des_plis += self.dates_limites_de_remise_des_plis()
+        consultations += self.consultations()
+        pages = self.pages()
+
+        end = perf_counter()
+
+        print(f"Parse consultations [page: {page}]: " f"{end - start}")
+
+        return pages
 
 
 class DetailsConsultationParser:

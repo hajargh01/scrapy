@@ -19,29 +19,6 @@ dates_limites_de_remise_des_plis = []
 consultations = []
 
 
-def collect_consultation_page(soup, page):
-    global dates_de_publication, references, objets, acheteurs_publics, lieux, dates_limites_de_remise_des_plis, consultations
-
-    start = perf_counter()
-
-    parser = ConsultationListParser(soup)
-
-    dates_de_publication += parser.dates_de_publication()
-    references += parser.references()
-    objets += parser.objets()
-    acheteurs_publics += parser.acheteurs_publics()
-    lieux += parser.lieux()
-    dates_limites_de_remise_des_plis += parser.dates_limites_de_remise_des_plis()
-    consultations += parser.consultations()
-    pages = parser.pages()
-
-    end = perf_counter()
-
-    print(f"Parse consultations [page: {page}]: " f"{end - start}")
-
-    return pages
-
-
 start = perf_counter()
 
 response = open_search_form()
@@ -51,11 +28,31 @@ soup = BeautifulSoup(response.text, "html.parser")
 response = post_search(page_size_data(page_state(soup)), "page size")
 soup = BeautifulSoup(response.text, "html.parser")
 
-pages = collect_consultation_page(soup, 1)
+parser = ConsultationListParser(soup)
+pages = parser.collect_consultation_page(
+    1,
+    dates_de_publication,
+    references,
+    objets,
+    acheteurs_publics,
+    lieux,
+    dates_limites_de_remise_des_plis,
+    consultations,
+)
 
 for page in range(2, pages + 1):
     soup = post_search(next_page_data(page_state(soup)), f"page {page}")
-    collect_consultation_page(soup, page)
+    parser = ConsultationListParser
+    parser.collect_consultation_page(
+        page,
+        dates_de_publication,
+        references,
+        objets,
+        acheteurs_publics,
+        lieux,
+        dates_limites_de_remise_des_plis,
+        consultations,
+    )
 
 end = perf_counter()
 
@@ -63,7 +60,6 @@ print(f"Request and parse consultations pages: {end - start}")
 
 estimations = [None] * len(references)
 cautions = [None] * len(references)
-page = 1
 sum_request = 0
 sum_parsing = 0
 
