@@ -9,6 +9,7 @@ class Consultation:
         date_limite,
         estimation,
         caution,
+        url,
     ):
         self.date_publication = date_publication
         self.reference = reference
@@ -18,3 +19,4 @@ class Consultation:
         self.date_limite = date_limite
         self.estimation = estimation
         self.caution = caution
+        self.url = url

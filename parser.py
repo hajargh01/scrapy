@@ -1,6 +1,6 @@
 import re
 from time import perf_counter
-
+from consultation import Consultation
 from _selectors import selectors
 
 
@@ -63,31 +63,41 @@ class ConsultationListParser:
     def collect_consultation_page(
         self,
         page,
-        dates_de_publication,
-        references,
-        objets,
-        acheteurs_publics,
-        lieux,
-        dates_limites_de_remise_des_plis,
-        consultations,
     ):
 
         start = perf_counter()
 
-        dates_de_publication += self.dates_de_publication()
-        references += self.references()
-        objets += self.objets()
-        acheteurs_publics += self.acheteurs_publics()
-        lieux += self.lieux()
-        dates_limites_de_remise_des_plis += self.dates_limites_de_remise_des_plis()
-        consultations += self.consultations()
+        dates_de_publication = self.dates_de_publication()
+        references = self.references()
+        objets = self.objets()
+        acheteurs_publics = self.acheteurs_publics()
+        lieux = self.lieux()
+        dates_limites = self.dates_limites_de_remise_des_plis()
         pages = self.pages()
+        urls = self.consultations()
 
         end = perf_counter()
 
+        consultations = []
+
+        for i in range(len(references)):
+            consultation = Consultation(
+                dates_de_publication[i],
+                references[i],
+                objets[i],
+                acheteurs_publics[i],
+                lieux[i],
+                dates_limites[i],
+                None,
+                None,
+                urls[i],
+            )
+
+            consultations.append(consultation)
+
         print(f"Parse consultations [page: {page}]: " f"{end - start}")
 
-        return pages
+        return consultations
 
 
 class DetailsConsultationParser:
