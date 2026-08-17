@@ -8,6 +8,7 @@ from payload import (
     search_data,
 )
 from bs4 import BeautifulSoup
+import csv
 
 consultations = []
 
@@ -83,10 +84,36 @@ end = perf_counter()
 print(f"Request and parse details consultation pages: {end - start}")
 
 
-for cons in consultations:
-    print(cons.date_publication)
-    print(cons.reference)
-    print(cons.date_limite)
-    print(cons.acheteurs_public)
-    print(cons.objet)
-    print(cons.lieux)
+with open('consultations.csv", "w", newline=""') as csvfile:
+    fieldnames = [
+        "date_publication",
+        "reference",
+        "objet",
+        "acheteurs_public",
+        "lieux",
+        "date_limite",
+        "estimation",
+        "caution",
+        "url",
+    ]
+    writer = csv.DictWriter(
+        csvfile,
+        fieldnames=fieldnames,
+    )
+    writer.writeheader()
+    for cons in consultations:
+        writer.writerow(
+            {
+                "date_publication": cons.date_publication,
+                "reference": cons.reference,
+                "objet": cons.objet,
+                "acheteurs_public": cons.acheteurs_public,
+                "lieux": cons.lieux,
+                "date_limite": cons.date_limite,
+                "estimation": cons.estimation,
+                "caution": cons.caution,
+                "url": cons.url,
+            }
+        )
+
+print(f" nbr cons {len(consultations)}")
