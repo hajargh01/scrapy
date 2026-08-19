@@ -1,4 +1,5 @@
 from _request import fetch_details_consultation, open_search_form, post_search
+from consultation import Consultation
 from parser import ConsultationListParser, DetailsConsultationParser, page_state
 import threading
 from time import perf_counter
@@ -66,9 +67,36 @@ def process_consultation(consultation, index):
     consultation.caution = caution
 
 
+consultations_file = []
+
+with open("consultations.csv", newline="", encoding="utf-8-sig") as csvfile:
+    reader = csv.DictReader(csvfile)
+
+    for row in reader:
+        consultation = Consultation(
+            row["date_publication"],
+            row["reference"],
+            row["objet"],
+            row["acheteurs_public"],
+            row["lieux"],
+            row["date_limite"],
+            row["estimation"],
+            row["caution"],
+            row["url"],
+        )
+
+        consultations_file.append(consultation)
+url_file = []
+
+for consultation in consultations_file:
+    url_file.append(consultation.url)
+
+
 threads = []
 
 for i in range(len(consultations)):
+    if consultations[i].url in url_file:
+        continue
     thread = threading.Thread(
         target=process_consultation,
         args=(consultations[i], i),
@@ -84,7 +112,12 @@ end = perf_counter()
 print(f"Request and parse details consultation pages: {end - start}")
 
 
-with open('consultations.csv", "w", newline=""') as csvfile:
+new = []
+for cons in consultations:
+    if cons.url not in url_file:
+        new.append(cons)
+
+with open("consultations.csv", "w", newline="", encoding="utf-8-sig") as csvfile:
     fieldnames = [
         "date_publication",
         "reference",
@@ -101,7 +134,8 @@ with open('consultations.csv", "w", newline=""') as csvfile:
         fieldnames=fieldnames,
     )
     writer.writeheader()
-    for cons in consultations:
+
+    for cons in consultations_file:
         writer.writerow(
             {
                 "date_publication": cons.date_publication,
@@ -116,4 +150,18 @@ with open('consultations.csv", "w", newline=""') as csvfile:
             }
         )
 
-print(f" nbr cons {len(consultations)}")
+    for cons in new:
+        writer.writerow(
+            {
+                "date_publication": cons.date_publication,
+                "reference": cons.reference,
+                "objet": cons.objet,
+                "acheteurs_public": cons.acheteurs_public,
+                "lieux": cons.lieux,
+                "date_limite": cons.date_limite,
+                "estimation": cons.estimation,
+                "caution": cons.caution,
+                "url": cons.url,
+            }
+        )
+print(f" nbr cons {len(consultations_file) + len(new)}")
