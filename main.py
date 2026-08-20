@@ -1,5 +1,4 @@
 from _request import fetch_details_consultation, open_search_form, post_search
-from consultation import Consultation
 from parser import ConsultationListParser, DetailsConsultationParser, page_state
 import threading
 from time import perf_counter
@@ -67,35 +66,27 @@ def process_consultation(consultation, index):
     consultation.caution = caution
 
 
-consultations_file = []
-
+stored = {}
 with open("consultations.csv", newline="", encoding="utf-8-sig") as csvfile:
+    lines = csvfile.readlines()
+
     reader = csv.DictReader(csvfile)
 
     for row in reader:
-        consultation = Consultation(
-            row["date_publication"],
-            row["reference"],
-            row["objet"],
-            row["acheteurs_public"],
-            row["lieux"],
-            row["date_limite"],
-            row["estimation"],
-            row["caution"],
-            row["url"],
-        )
+        stored[row["url"]] = {
+            "estimation": row["estimation"],
+            "caution": row["caution"],
+        }
 
-        consultations_file.append(consultation)
-url_file = []
-
-for consultation in consultations_file:
-    url_file.append(consultation.url)
-
+    for consultation in consultations:
+        if consultation.url in stored:
+            consultation.estimation = stored[consultation.url]["estimation"]
+            consultation.caution = stored[consultation.url]["caution"]
 
 threads = []
 
 for i in range(len(consultations)):
-    if consultations[i].url in url_file:
+    if consultations[i].url in stored:
         continue
     thread = threading.Thread(
         target=process_consultation,
@@ -110,12 +101,6 @@ for thread in threads:
     thread.join()
 end = perf_counter()
 print(f"Request and parse details consultation pages: {end - start}")
-
-
-new = []
-for cons in consultations:
-    if cons.url not in url_file:
-        new.append(cons)
 
 with open("consultations.csv", "w", newline="", encoding="utf-8-sig") as csvfile:
     fieldnames = [
@@ -135,7 +120,7 @@ with open("consultations.csv", "w", newline="", encoding="utf-8-sig") as csvfile
     )
     writer.writeheader()
 
-    for cons in consultations_file:
+    for cons in consultations:
         writer.writerow(
             {
                 "date_publication": cons.date_publication,
@@ -150,18 +135,4 @@ with open("consultations.csv", "w", newline="", encoding="utf-8-sig") as csvfile
             }
         )
 
-    for cons in new:
-        writer.writerow(
-            {
-                "date_publication": cons.date_publication,
-                "reference": cons.reference,
-                "objet": cons.objet,
-                "acheteurs_public": cons.acheteurs_public,
-                "lieux": cons.lieux,
-                "date_limite": cons.date_limite,
-                "estimation": cons.estimation,
-                "caution": cons.caution,
-                "url": cons.url,
-            }
-        )
-print(f" nbr cons {len(consultations_file) + len(new)}")
+print(f" nbr cons {len(consultations)}")
