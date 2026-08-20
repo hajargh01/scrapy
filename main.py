@@ -1,3 +1,4 @@
+import repository
 from _request import fetch_details_consultation, open_search_form, post_search
 from parser import ConsultationListParser, DetailsConsultationParser, page_state
 import threading
@@ -8,7 +9,6 @@ from payload import (
     search_data,
 )
 from bs4 import BeautifulSoup
-import csv
 
 consultations = []
 
@@ -42,13 +42,7 @@ end = perf_counter()
 print(f"Request and parse consultations pages: {end - start}")
 
 
-sum_request = 0
-sum_parsing = 0
-
-
 def process_consultation(consultation, index):
-    global sum_request, sum_parsing
-
     start = perf_counter()
     response = fetch_details_consultation(consultation.url)
 
@@ -66,22 +60,12 @@ def process_consultation(consultation, index):
     consultation.caution = caution
 
 
-stored = {}
-with open("consultations.csv", newline="", encoding="utf-8-sig") as csvfile:
-    lines = csvfile.readlines()
+stored = repository.read()
 
-    reader = csv.DictReader(csvfile)
-
-    for row in reader:
-        stored[row["url"]] = {
-            "estimation": row["estimation"],
-            "caution": row["caution"],
-        }
-
-    for consultation in consultations:
-        if consultation.url in stored:
-            consultation.estimation = stored[consultation.url]["estimation"]
-            consultation.caution = stored[consultation.url]["caution"]
+for consultation in consultations:
+    if consultation.url in stored:
+        consultation.estimation = stored[consultation.url]["estimation"]
+        consultation.caution = stored[consultation.url]["caution"]
 
 threads = []
 
@@ -102,37 +86,6 @@ for thread in threads:
 end = perf_counter()
 print(f"Request and parse details consultation pages: {end - start}")
 
-with open("consultations.csv", "w", newline="", encoding="utf-8-sig") as csvfile:
-    fieldnames = [
-        "date_publication",
-        "reference",
-        "objet",
-        "acheteurs_public",
-        "lieux",
-        "date_limite",
-        "estimation",
-        "caution",
-        "url",
-    ]
-    writer = csv.DictWriter(
-        csvfile,
-        fieldnames=fieldnames,
-    )
-    writer.writeheader()
-
-    for cons in consultations:
-        writer.writerow(
-            {
-                "date_publication": cons.date_publication,
-                "reference": cons.reference,
-                "objet": cons.objet,
-                "acheteurs_public": cons.acheteurs_public,
-                "lieux": cons.lieux,
-                "date_limite": cons.date_limite,
-                "estimation": cons.estimation,
-                "caution": cons.caution,
-                "url": cons.url,
-            }
-        )
+repository.write(consultations)
 
 print(f" nbr cons {len(consultations)}")
