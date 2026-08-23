@@ -1,11 +1,17 @@
 import re
 from time import perf_counter
+from urllib.parse import parse_qs, urlparse
+
 from consultation import Consultation
 from _selectors import selectors
 
 
 def page_state(soup):
     return soup.select_one(selectors["pagestate"])["value"]
+
+
+def get_id(url):
+    return parse_qs(urlparse(url).query)["refConsultation"][0]
 
 
 class ConsultationListParser:
@@ -85,6 +91,7 @@ class ConsultationListParser:
 
         for i in range(len(references)):
             consultation = Consultation(
+                get_id(urls[i]),
                 dates_de_publication[i],
                 references[i],
                 objets[i],

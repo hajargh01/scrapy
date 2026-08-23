@@ -1,4 +1,7 @@
 import csv
+from urllib.parse import parse_qs, urlparse
+
+from parser import get_id
 
 
 def read():
@@ -19,6 +22,7 @@ def read():
 def write(consultations):
     with open("consultations.csv", "w", newline="", encoding="utf-8-sig") as csvfile:
         fieldnames = [
+            "id",
             "date_publication",
             "reference",
             "objet",
@@ -40,6 +44,7 @@ def write(consultations):
         for cons in consultations:
             writer.writerow(
                 {
+                    "id": get_id(cons.url),
                     "date_publication": cons.date_publication,
                     "reference": cons.reference,
                     "objet": cons.objet,

@@ -63,14 +63,14 @@ def process_consultation(consultation, index):
 stored = repository.read()
 
 for consultation in consultations:
-    if consultation.url in stored:
-        consultation.estimation = stored[consultation.url]["estimation"]
-        consultation.caution = stored[consultation.url]["caution"]
+    if consultation.id in stored:
+        consultation.estimation = stored[consultation.id]["estimation"]
+        consultation.caution = stored[consultation.id]["caution"]
 
 threads = []
 
 for i in range(len(consultations)):
-    if consultations[i].url in stored:
+    if consultations[i].id in stored:
         continue
     thread = threading.Thread(
         target=process_consultation,
@@ -84,6 +84,7 @@ for thread in threads:
 for thread in threads:
     thread.join()
 end = perf_counter()
+
 print(f"Request and parse details consultation pages: {end - start}")
 
 repository.write(consultations)

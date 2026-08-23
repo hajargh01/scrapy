@@ -1,6 +1,7 @@
 class Consultation:
     def __init__(
         self,
+        id,
         date_publication,
         reference,
         objet,
@@ -11,6 +12,7 @@ class Consultation:
         caution,
         url,
     ):
+        self.id = id
         self.date_publication = date_publication
         self.reference = reference
         self.objet = objet
