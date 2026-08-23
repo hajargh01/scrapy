@@ -58,6 +58,9 @@ class ConsultationListParser:
         return ls
 
     def pages(self):
+        tag = self.soup.select_one(selectors["pages"])
+        if tag is None:
+            return 1
         return int(self.soup.select_one(selectors["pages"]).text)
 
     def collect_consultation_page(
