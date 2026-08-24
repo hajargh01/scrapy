@@ -11,7 +11,7 @@ def read():
         reader = csv.DictReader(csvfile)
 
         for row in reader:
-            stored[row["url"]] = {
+            stored[row["id"]] = {
                 "estimation": row["estimation"],
                 "caution": row["caution"],
             }
@@ -32,6 +32,9 @@ def write(consultations):
             "estimation",
             "caution",
             "url",
+            "domaines",
+            "justification",
+            "confidence",
         ]
 
         writer = csv.DictWriter(
@@ -54,5 +57,8 @@ def write(consultations):
                     "estimation": cons.estimation,
                     "caution": cons.caution,
                     "url": cons.url,
+                    "domaines": "|".join(cons.domaines),
+                    "justification": cons.justification,
+                    "confidence": cons.confidence,
                 }
             )

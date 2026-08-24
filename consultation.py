@@ -11,6 +11,9 @@ class Consultation:
         estimation,
         caution,
         url,
+        domaines,
+        justification,
+        confidence,
     ):
         self.id = id
         self.date_publication = date_publication
@@ -22,3 +25,6 @@ class Consultation:
         self.estimation = estimation
         self.caution = caution
         self.url = url
+        self.domaines = domaines
+        self.justification = justification
+        self.confidence = confidence

@@ -101,6 +101,9 @@ class ConsultationListParser:
                 None,
                 None,
                 urls[i],
+                [],
+                None,
+                None,
             )
 
             consultations.append(consultation)

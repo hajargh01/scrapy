@@ -1,5 +1,11 @@
+import os
+
+from dotenv import load_dotenv
+from openai import OpenAI
+
 import repository
 from _request import fetch_details_consultation, open_search_form, post_search
+from ai import Results, SYSTEM
 from parser import ConsultationListParser, DetailsConsultationParser, page_state
 import threading
 from time import perf_counter
@@ -9,6 +15,8 @@ from payload import (
     search_data,
 )
 from bs4 import BeautifulSoup
+
+load_dotenv()
 
 consultations = []
 
@@ -86,6 +94,35 @@ for thread in threads:
 end = perf_counter()
 
 print(f"Request and parse details consultation pages: {end - start}")
+
+ls = []
+for consultation in consultations:
+    if consultation.id not in stored:
+        ls.append(
+            f"[{consultation.id}]\nObjet : {consultation.objet}\nAcheteur : {consultation.acheteurs_public}"
+        )
+
+
+user = "\n\n".join(ls)
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+response = client.responses.parse(
+    model="gpt-5.6",
+    input=[
+        {"role": "system", "content": SYSTEM},
+        {"role": "user", "content": user},
+    ],
+    text_format=Results,
+)
+
+for consultation in consultations:
+    if consultation.id not in stored:
+        for result in response.output_parsed.results:
+            if consultation.id == result.id:
+                consultation.domaines = result.domaines
+                consultation.justification = result.justification
+                consultation.confidence = result.confidence
+
 
 repository.write(consultations)
 
