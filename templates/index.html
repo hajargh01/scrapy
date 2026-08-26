@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document</title>
+</head>
+<body>
+<ul>
+   {% for item in items %}
+        <li>id: {{ item.id }}</li>
+        <li>date de publication: {{ item.date_publication }}</li>
+        <li>reference: {{ item.reference }}</li>
+        <li>objet: {{ item.objet }}</li>
+        <li>acheteurs public: {{ item.acheteurs_public }}</li>
+        <li>lieux: {{ item.lieux }}</li>
+        <li>date_limite: {{ item.date_limite }}</li>
+        <li>estimation: {{ item.estimation }}</li>
+        <li>caution: {{ item.caution }}</li>
+        <li>url : <a href={{item.url}} > {{ item.url }} </a> </li>
+        <li>domaines: {{ item.domaines }}</li>
+        <li>justification: {{ item.justification }}</li>
+        <li>confidence: {{ item.confidence }}</li>
+        <br><br>
+   {% endfor %}
+</ul>
+
+</body>
+</html>
