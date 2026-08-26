@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 from time import perf_counter
 from urllib.parse import parse_qs, urlparse
 
@@ -53,7 +54,7 @@ class ConsultationListParser:
         for i in self.soup.select(selectors["dates_limites_de_remise_des_plis"]):
             s = i.contents[1].text.strip()
             date, time = re.match(r"(.*?)(\d{1,2}:\d{2})$", s).groups()
-            ls.append({"date": date, "time": time})
+            ls.append(datetime.strptime(f"{date.strip()} {time}", "%d/%m/%Y %H:%M"))
         return ls
 
     def consultations(self):

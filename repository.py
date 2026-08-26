@@ -53,7 +53,7 @@ def write(consultations):
                     "objet": cons.objet,
                     "acheteurs_public": cons.acheteurs_public,
                     "lieux": cons.lieux,
-                    "date_limite": cons.date_limite,
+                    "date_limite": cons.date_limite.isoformat(timespec="minutes"),
                     "estimation": cons.estimation,
                     "caution": cons.caution,
                     "url": cons.url,
