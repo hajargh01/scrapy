@@ -2,3 +2,4 @@
 .idea
 consultations.csv
 .env
+*.bak

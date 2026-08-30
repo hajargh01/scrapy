@@ -48,7 +48,7 @@ def write(consultations):
             writer.writerow(
                 {
                     "id": get_id(cons.url),
-                    "date_publication": cons.date_publication,
+                    "date_publication": cons.date_publication.isoformat(),
                     "reference": cons.reference,
                     "objet": cons.objet,
                     "acheteurs_public": cons.acheteurs_public,

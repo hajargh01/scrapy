@@ -22,7 +22,7 @@ class ConsultationListParser:
     def dates_de_publication(self):
         ls = []
         for _date in self.soup.select(selectors["dates_de_publication"]):
-            ls.append(_date.text.strip())
+            ls.append(datetime.strptime(_date.text.strip(), "%d/%m/%Y").date())
         return ls
 
     def references(self):
@@ -122,7 +122,7 @@ class DetailsConsultationParser:
         estimation = self.soup.select_one(selectors["estimation"])
 
         if estimation:
-            return estimation.text.strip()
+            return float(estimation.text.strip().replace(",", ".").replace(" ", ""))
 
         return None
 
@@ -132,4 +132,4 @@ class DetailsConsultationParser:
         if caution.text.strip() == "":
             return None
 
-        return caution.text
+        return float(caution.text.replace("MAD", "").replace(",", ".").replace(" ", ""))
