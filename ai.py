@@ -19,6 +19,10 @@ class Domaine(str, Enum):
     EVENEMENTIEL_COMMUNICATION = "EVENEMENTIEL_COMMUNICATION"
     AUTRE = "AUTRE"
 
+    @classmethod
+    def values(cls):
+        return [d.value for d in cls]
+
 
 class Confidence(str, Enum):
     HAUTE = "HAUTE"
