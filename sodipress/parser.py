@@ -119,7 +119,6 @@ class ConsultationParser:
         consultation = Consultation()
 
         consultation.id = f'sodipress:{self.numero_ordre()}'
-        consultation.date_publication = self.date_de_publication()
         consultation.reference = self.reference()
         consultation.objet = self.objet()
         consultation.acheteur_public = self.acheteur_public()

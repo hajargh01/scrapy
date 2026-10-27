@@ -1,7 +1,8 @@
-import re
 from datetime import datetime
 from time import perf_counter
 from urllib.parse import parse_qs, urlparse
+
+from bs4 import BeautifulSoup
 
 from consultation import Consultation
 from helpers import parse_number
@@ -15,16 +16,24 @@ def page_state(soup):
 def get_id(url):
     return f'marchespublics:{parse_qs(urlparse(url).query)["refConsultation"][0]}'
 
+months = {
+    'Jan': 1,
+    'Feb': 2,
+    'Mar': 3,
+    'Apr': 4,
+    'May': 5,
+    'Jun': 6,
+    'Jul': 7,
+    'Aug': 8,
+    'Sep': 9,
+    'Oct': 10,
+    'Nov': 11,
+    'Dec': 12,
+}
 
 class ConsultationListParser:
-    def __init__(self, soup):
+    def __init__(self, soup: BeautifulSoup):
         self.soup = soup
-
-    def dates_de_publication(self):
-        ls = []
-        for _date in self.soup.select(selectors["dates_de_publication"]):
-            ls.append(datetime.strptime(_date.text.strip(), "%d/%m/%Y").date())
-        return ls
 
     def references(self):
         ls = []
@@ -35,34 +44,48 @@ class ConsultationListParser:
     def objets(self):
         ls = []
         for _object in self.soup.select(selectors["objets"]):
-            ls.append(_object.text.strip())
+            ls.append(_object.contents[2].text.strip())
         return ls
 
     def acheteurs_publics(self):
         ls = []
         for acheteur in self.soup.select(selectors["acheteurs_publics"]):
-            ls.append(acheteur.contents[-1].text.strip())
+            ls.append(acheteur.contents[1].contents[2].text.strip())
         return ls
 
     def lieux(self):
         ls = []
         for lieu in self.soup.select(selectors["lieux"]):
-            ls.append(lieu.contents[0].text.strip())
+            ls.append(lieu.text.split("\n\r")[0].strip())
         return ls
 
     def dates_limites_de_remise_des_plis(self):
         ls = []
         for i in self.soup.select(selectors["dates_limites_de_remise_des_plis"]):
-            s = i.contents[1].text.strip()
-            date, time = re.match(r"(.*?)(\d{1,2}:\d{2})$", s).groups()
-            ls.append(datetime.strptime(f"{date.strip()} {time}", "%d/%m/%Y %H:%M"))
+            date = i.contents[1].text.strip()
+
+            day, month, year = date.split(' ')[1:]
+            month = months[month]
+
+            time = i.contents[3].text.strip()
+
+            ls.append(datetime.strptime(f"{day}/{month}/{year} {time}", "%d/%m/%Y %H:%M"))
+            print()
+        return ls
+
+    def estimations(self):
+        ls = []
+        for estimation in self.soup.select(selectors["estimations"]):
+            if estimation.text.strip() == '':
+                ls.append(None)
+            else:
+                ls.append(parse_number(estimation.text.strip()))
         return ls
 
     def consultations(self):
         ls = []
-        base_url = "https://www.marchespublics.gov.ma/index.php"
         for consultation in self.soup.select(selectors["consultations"]):
-            ls.append(base_url + consultation["href"])
+            ls.append(consultation["onclick"].split("\"")[1])
         return ls
 
     def pages(self):
@@ -78,13 +101,13 @@ class ConsultationListParser:
 
         start = perf_counter()
 
-        dates_de_publication = self.dates_de_publication()
         references = self.references()
         objets = self.objets()
         acheteurs_publics = self.acheteurs_publics()
         lieux = self.lieux()
         dates_limites = self.dates_limites_de_remise_des_plis()
-        pages = self.pages()
+        estimations = self.estimations()
+        self.pages()
         urls = self.consultations()
 
         end = perf_counter()
@@ -94,12 +117,12 @@ class ConsultationListParser:
         for i in range(len(references)):
             consultation = Consultation()
             consultation.id = get_id(urls[i])
-            consultation.date_publication = dates_de_publication[i]
             consultation.reference = references[i]
             consultation.objet = objets[i]
             consultation.acheteur_public = acheteurs_publics[i]
             consultation.lieu = lieux[i]
             consultation.date_limite = dates_limites[i]
+            consultation.estimation = estimations[i]
             consultation.url = urls[i]
             consultation.portail = 'marchespublics'
 
@@ -114,18 +137,10 @@ class DetailsConsultationParser:
     def __init__(self, soup):
         self.soup = soup
 
-    def estimation(self):
-        estimation = self.soup.select_one(selectors["estimation"])
-
-        if estimation:
-            return parse_number(estimation.text.strip())
-
-        return None
-
     def caution(self):
         caution = self.soup.select_one(selectors["caution"])
 
-        if caution.text.strip() == "":
+        if caution is None:
             return None
 
         return float(parse_number(caution.text.replace("MAD", "")))

@@ -14,7 +14,7 @@ CRITERIA = {
     "ctl0$CONTENU_PAGE$AdvancedSearch$dateMiseEnLigneEnd": "",
     "ctl0$CONTENU_PAGE$AdvancedSearch$dateMiseEnLigneCalculeStart": config.FROM,
     "ctl0$CONTENU_PAGE$AdvancedSearch$dateMiseEnLigneCalculeEnd": config.TO,
-    "ctl0$CONTENU_PAGE$AdvancedSearch$domaineActivite$idsDomaines": "1.13.11#1.13.12#1.16.5#2.18.1#2.18.3#2.18.4#2.18.5#3.11.6#3.12.6#3.19#",
+    "ctl0$CONTENU_PAGE$AdvancedSearch$domaineActivite$idsDomaines": "1.13.11#1.13.12#1.16.5#2.18.1#2.18.3#2.18.4#2.18.5#3.11.6#3.12.6#3.19#3.19.1#3.19.2#3.19.3#3.19.4#3.19.5#3.19.6#",
 }
 
 

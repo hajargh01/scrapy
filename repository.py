@@ -4,7 +4,6 @@ def write(consultations):
     with open("consultations.csv", "a", newline="", encoding="utf-8-sig") as csvfile:
         fieldnames = [
             "id",
-            "date_publication",
             "reference",
             "objet",
             "acheteurs_public",
@@ -30,7 +29,6 @@ def write(consultations):
             writer.writerow(
                 {
                     "id": consultation.id,
-                    "date_publication": consultation.date_publication.isoformat(),
                     "reference": consultation.reference,
                     "objet": consultation.objet,
                     "acheteurs_public": consultation.acheteur_public,

@@ -7,7 +7,6 @@ from ai import Domaine, Confidence
 @dataclass
 class Consultation:
     id = None
-    date_publication: datetime | None = None
     reference: str | None = None
     objet: str | None = None
     acheteur_public: str | None = None

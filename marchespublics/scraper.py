@@ -60,14 +60,12 @@ def process_consultation(consultation, index):
     test = BeautifulSoup(response.text, "html.parser")
     details_consultation_parser = DetailsConsultationParser(test)
 
-    estimation = details_consultation_parser.estimation()
     caution = details_consultation_parser.caution()
 
     end = perf_counter()
 
     print(f"Request and parse details consultation [#: {index+1}]: {end - start}")
 
-    consultation.estimation = estimation
     consultation.caution = caution
 
 
