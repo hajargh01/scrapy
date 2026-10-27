@@ -4,6 +4,7 @@ from consultation import Consultation
 from sodipress._request import login_form, login, fetch_consultations
 from sodipress.parser import get_token, ConsultationParser
 
+
 def consultations():
     consultations_list: list[Consultation] = []
 
@@ -14,10 +15,6 @@ def consultations():
         login(token)
 
         response = fetch_consultations(page=1)
-
-        with open('index.html', 'w') as file:
-            file.write(response.text)
-
 
         soup = BeautifulSoup(response.text, "html.parser")
         parser = ConsultationParser(soup)
