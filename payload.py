@@ -1,3 +1,5 @@
+import config
+
 FORM_URL = "https://www.marchespublics.gov.ma/index.php?page=entreprise.EntrepriseAdvancedSearch"
 SEARCH_URL = FORM_URL + "&searchAnnCons"
 
@@ -10,8 +12,8 @@ PAGE_SUIVANTE = "ctl0$CONTENU_PAGE$resultSearch$PagerTop$ctl2"
 CRITERIA = {
     "ctl0$CONTENU_PAGE$AdvancedSearch$dateMiseEnLigneStart": "",
     "ctl0$CONTENU_PAGE$AdvancedSearch$dateMiseEnLigneEnd": "",
-    "ctl0$CONTENU_PAGE$AdvancedSearch$dateMiseEnLigneCalculeStart": "31/08/2026",
-    "ctl0$CONTENU_PAGE$AdvancedSearch$dateMiseEnLigneCalculeEnd": "16/09/2026",
+    "ctl0$CONTENU_PAGE$AdvancedSearch$dateMiseEnLigneCalculeStart": config.FROM,
+    "ctl0$CONTENU_PAGE$AdvancedSearch$dateMiseEnLigneCalculeEnd": config.TO,
     "ctl0$CONTENU_PAGE$AdvancedSearch$domaineActivite$idsDomaines": "1.13.11#1.13.12#1.16.5#2.18.1#2.18.3#2.18.4#2.18.5#3.11.6#3.12.6#3.19#",
 }
 

@@ -1,26 +1,7 @@
 import csv
-from urllib.parse import parse_qs, urlparse
-
-from parser import get_id
-
-
-def read():
-    stored = {}
-
-    with open("consultations.csv", newline="", encoding="utf-8-sig") as csvfile:
-        reader = csv.DictReader(csvfile)
-
-        for row in reader:
-            stored[row["id"]] = {
-                "estimation": row["estimation"],
-                "caution": row["caution"],
-            }
-
-    return stored
-
 
 def write(consultations):
-    with open("consultations.csv", "w", newline="", encoding="utf-8-sig") as csvfile:
+    with open("consultations.csv", "a", newline="", encoding="utf-8-sig") as csvfile:
         fieldnames = [
             "id",
             "date_publication",
@@ -32,6 +13,7 @@ def write(consultations):
             "estimation",
             "caution",
             "url",
+            "portail",
             "domaines",
             "justification",
             "confidence",
@@ -42,23 +24,24 @@ def write(consultations):
             fieldnames=fieldnames,
         )
 
-        writer.writeheader()
+        # writer.writeheader()
 
-        for cons in consultations:
+        for consultation in consultations:
             writer.writerow(
                 {
-                    "id": get_id(cons.url),
-                    "date_publication": cons.date_publication.isoformat(),
-                    "reference": cons.reference,
-                    "objet": cons.objet,
-                    "acheteurs_public": cons.acheteurs_public,
-                    "lieux": cons.lieux,
-                    "date_limite": cons.date_limite.isoformat(timespec="minutes"),
-                    "estimation": cons.estimation,
-                    "caution": cons.caution,
-                    "url": cons.url,
-                    "domaines": "|".join(cons.domaines),
-                    "justification": cons.justification,
-                    "confidence": cons.confidence,
+                    "id": consultation.id,
+                    "date_publication": consultation.date_publication.isoformat(),
+                    "reference": consultation.reference,
+                    "objet": consultation.objet,
+                    "acheteurs_public": consultation.acheteur_public,
+                    "lieux": consultation.lieu,
+                    "date_limite": consultation.date_limite.isoformat(timespec="minutes"),
+                    "estimation": consultation.estimation,
+                    "caution": consultation.caution,
+                    "url": consultation.url,
+                    "portail": consultation.portail,
+                    "domaines": "|".join(consultation.domaines),
+                    "justification": consultation.justification,
+                    "confidence": consultation.confidence,
                 }
             )

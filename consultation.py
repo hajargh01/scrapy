@@ -1,30 +1,22 @@
+from dataclasses import dataclass, field
+from datetime import datetime
+
+from ai import Domaine, Confidence
+
+
+@dataclass
 class Consultation:
-    def __init__(
-        self,
-        id,
-        date_publication,
-        reference,
-        objet,
-        acheteurs_public,
-        lieux,
-        date_limite,
-        estimation,
-        caution,
-        url,
-        domaines,
-        justification,
-        confidence,
-    ):
-        self.id = id
-        self.date_publication = date_publication
-        self.reference = reference
-        self.objet = objet
-        self.acheteurs_public = acheteurs_public
-        self.lieux = lieux
-        self.date_limite = date_limite
-        self.estimation = estimation
-        self.caution = caution
-        self.url = url
-        self.domaines = domaines
-        self.justification = justification
-        self.confidence = confidence
+    id = None
+    date_publication: datetime | None = None
+    reference: str | None = None
+    objet: str | None = None
+    acheteur_public: str | None = None
+    lieu: str | None = None
+    date_limite: datetime | None = None
+    estimation: float | None = None
+    caution: float | None = None
+    url: str | None = None
+    domaines: list[Domaine] = field(default_factory=list)
+    justification: str = None
+    confidence: Confidence | None = None
+    portail: str | None = None

@@ -4,7 +4,8 @@ from time import perf_counter
 from urllib.parse import parse_qs, urlparse
 
 from consultation import Consultation
-from _selectors import selectors
+from helpers import parse_number
+from marchespublics._selectors import selectors
 
 
 def page_state(soup):
@@ -12,7 +13,7 @@ def page_state(soup):
 
 
 def get_id(url):
-    return parse_qs(urlparse(url).query)["refConsultation"][0]
+    return f'marchespublics:{parse_qs(urlparse(url).query)["refConsultation"][0]}'
 
 
 class ConsultationListParser:
@@ -91,21 +92,16 @@ class ConsultationListParser:
         consultations = []
 
         for i in range(len(references)):
-            consultation = Consultation(
-                get_id(urls[i]),
-                dates_de_publication[i],
-                references[i],
-                objets[i],
-                acheteurs_publics[i],
-                lieux[i],
-                dates_limites[i],
-                None,
-                None,
-                urls[i],
-                [],
-                None,
-                None,
-            )
+            consultation = Consultation()
+            consultation.id = get_id(urls[i])
+            consultation.date_publication = dates_de_publication[i]
+            consultation.reference = references[i]
+            consultation.objet = objets[i]
+            consultation.acheteur_public = acheteurs_publics[i]
+            consultation.lieu = lieux[i]
+            consultation.date_limite = dates_limites[i]
+            consultation.url = urls[i]
+            consultation.portail = 'marchespublics'
 
             consultations.append(consultation)
 
@@ -122,7 +118,7 @@ class DetailsConsultationParser:
         estimation = self.soup.select_one(selectors["estimation"])
 
         if estimation:
-            return float(estimation.text.strip().replace(",", ".").replace(" ", ""))
+            return parse_number(estimation.text.strip())
 
         return None
 
@@ -132,4 +128,4 @@ class DetailsConsultationParser:
         if caution.text.strip() == "":
             return None
 
-        return float(caution.text.replace("MAD", "").replace(",", ".").replace(" ", ""))
+        return float(parse_number(caution.text.replace("MAD", "")))

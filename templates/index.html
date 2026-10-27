@@ -4,26 +4,93 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
 <body>
-<ul>
-   {% for item in items %}
-        <li>id: {{ item.id }}</li>
-        <li>date de publication: {{ item.date_publication }}</li>
-        <li>reference: {{ item.reference }}</li>
-        <li>objet: {{ item.objet }}</li>
-        <li>acheteurs public: {{ item.acheteurs_public }}</li>
-        <li>lieux: {{ item.lieux }}</li>
-        <li>date_limite: {{ item.date_limite }}</li>
-        <li>estimation: {{ item.estimation }}</li>
-        <li>caution: {{ item.caution }}</li>
-        <li>url : <a href={{item.url}} > {{ item.url }} </a> </li>
-        <li>domaines: {{ item.domaines }}</li>
-        <li>justification: {{ item.justification }}</li>
-        <li>confidence: {{ item.confidence }}</li>
-        <br><br>
-   {% endfor %}
-</ul>
+    <main id="app" >
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-12 gap-x-8">
+                <div class="col-span-3 bg-red-100 h-screen">
+                    <ul v-for="domaine in domaines">
+                        <li>
+                            <input @change="updateDomaines(domaine.title)" type="checkbox" :id="domaine.title" :checked="domaine.checked" />
+                            <label :for="domaine.title">[[ domaine.title ]]</label>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-span-9 bg-green-100 h-screen">
+                    <div class="bg-white space-y-8">
+                            <div>
+                                total:
+                                [[ consultations.length ]]
+                            </div>
 
+
+                            <div v-for="consultation in consultations">
+                                [[ consultation.id ]]
+                                <div>[[ consultation.date_pubdivcation ]]</div>
+                                <div>[[ consultation.reference ]]</div>
+                                <div>[[ consultation.objet ]]</div>
+                                <div>[[ consultation.acheteurs_pubdivc ]]</div>
+                                <div>[[ consultation.diveux ]]</div>
+                                <div>[[ consultation.date_divmite ]]</div>
+                                <div>[[ consultation.estimation ]]</div>
+                                <div>[[ consultation.caution ]]</div>
+                                <div>[[ consultation.url]]</div>
+                                <div>[[ consultation.domaines ]]</div>
+                                <div>[[ consultation.justification ]]</div>
+                                <div>[[ consultation.confidence ]]</div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+<script>
+    const { createApp, ref, watch } = Vue;
+
+    const app = createApp({
+        setup() {
+            let consultations = [];
+
+            const domaines = ref([]);
+            const filteredConsultations = ref([]);
+
+            watch(domaines, () => {
+                const selected = domaines.value.filter(domaine => domaine.checked).map(domaine => domaine.title);
+
+                filteredConsultations.value = consultations.filter(consultation => {
+                    return consultation.domaines.split('|').some(domaine => selected.includes(domaine));
+                });
+            });
+
+            fetch('http://localhost:8080/api').then(response => {
+                response.json().then(data => {
+                    domaines.value = data.domaines.map(domaine => ({
+                        title: domaine,
+                        checked: true,
+                    }));
+                    consultations = data.consultations;
+                });
+            });
+
+            const updateDomaines = (selected) => {
+                domaines.value = domaines.value.map(domaine => domaine.title === selected ? {...domaine, checked: !domaine.checked} : domaine);
+            }
+
+            return {
+                domaines,
+                consultations: filteredConsultations,
+                updateDomaines,
+            };
+        }
+    });
+
+    app.config.compilerOptions.delimiters = ['[[', ']]'];
+
+    app.mount('#app');
+</script>
 </body>
 </html>
